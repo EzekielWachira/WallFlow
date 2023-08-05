@@ -1,0 +1,57 @@
+name: Android CI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    
+    - name: Build with Gradle
+      run: ./gradlew clean assembleRelease
+
+    - uses: r0adkll/sign-android-release@v1
+      id: sign_base_app
+      with:
+        releaseDirectory: app/build/outputs/apk/base/release
+        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+        alias: ${{ secrets.ALIAS }}
+        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+        keyPassword: ${{ secrets.KEY_PASSWORD }}
+    
+    - uses: r0adkll/sign-android-release@v1
+      id: sign_plus_app
+      with:
+        releaseDirectory: app/build/outputs/apk/plus/release
+        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+        alias: ${{ secrets.ALIAS }}
+        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+        keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Signed app bundle
+        path: |
+          ${{ steps.sign_base_app.outputs.signedReleaseFile0 }}
+          ${{ steps.sign_base_app.outputs.signedReleaseFile1 }}
+          ${{ steps.sign_base_app.outputs.signedReleaseFile2 }}
+          ${{ steps.sign_base_app.outputs.signedReleaseFile3 }}
+          ${{ steps.sign_plus_app.outputs.signedReleaseFile0 }}
+          ${{ steps.sign_plus_app.outputs.signedReleaseFile1 }}
+          ${{ steps.sign_plus_app.outputs.signedReleaseFile2 }}
+          ${{ steps.sign_plus_app.outputs.signedReleaseFile3 }}
