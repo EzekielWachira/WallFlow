@@ -102,6 +102,26 @@ android {
         }
     }
 
+    splits {
+        // Configures multiple APKs based on ABI.
+        abi {
+            // Enables building multiple APKs per ABI.
+            isEnable = !hasProperty("fdroid")
+                    && !hasProperty("noSplits")
+                    && gradle.startParameter.taskNames.isNotEmpty()
+                    && gradle.startParameter.taskNames[0].contains("Release")
+
+            // Resets the list of ABIs that Gradle should create APKs for to none.
+            reset()
+
+            // Specifies a list of ABIs that Gradle should create APKs for.
+            include("x86", "x86_64", "arm64-v8a", "armeabi-v7a")
+
+            // Specifies that we want to also generate a universal APK that includes all ABIs.
+            isUniversalApk = false
+        }
+    }
+
     androidComponents {
         onVariants { variant ->
             variant.outputs.forEach { output ->
