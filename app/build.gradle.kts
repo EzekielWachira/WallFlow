@@ -83,7 +83,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            if (!hasProperty("fdroid")) {
+            if (!hasProperty("github") && !hasProperty("fdroid")) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
@@ -109,7 +109,7 @@ android {
             isEnable = !hasProperty("fdroid")
                     && !hasProperty("noSplits")
                     && gradle.startParameter.taskNames.isNotEmpty()
-                    && gradle.startParameter.taskNames[0].contains("Release")
+                    && gradle.startParameter.taskNames.any { it.contains("Release") }
 
             // Resets the list of ABIs that Gradle should create APKs for to none.
             reset()
